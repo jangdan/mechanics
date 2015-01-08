@@ -1,0 +1,131 @@
+BETA(β)
+β0.6.3 (1.8.15)
+	- Fixed a SILLY mistake that happened because I didn’t know physics properly. (about acceleration)
+	- Rewrote the inefficient graphics loop code (but in turn added a new class)
+	- made the block smaller
+	- Removed the ‘physics concepts’ pane.
+
+
+Old version history (in Korean)
+-------------------------------
+
+2014년
+      5월
+         10일
+	‘중학교 과학 시뮬레이터’(‘leocarbon.nmsscs’)의 하위 프로젝트로 시작, 이를 세분화해 ‘(동)역학 시뮬레이터’(‘leocarbon.mechanics’)(이 작품)를 만듦
+
+         19일
+	‘중학교 과학 시뮬레이터’(‘leocarbon.nmsscs’)를 포기하고 이 작품만 개발하기 시작함
+
+
+      6월
+         3일
+	최초의 alpha 완성 (a0000) (alpha 0.0.0.0)
+	 - 2차원 내려다보는 시점
+	 - 드래그로 Block에 대한 힘(Force) 추가
+	 - 힘(Force)의 합력으로 Block의 움직임 구현
+	 - Controls(GUI)로 Block 추가, 시뮬레이션 멈춤 기능
+
+	 5일
+	alpha 0.0.1.0
+	 - 힘마다 각각 다른 무작위의 색
+	 - 합력을 굵은선으로 표시
+	 - 여러가지 표시 옵션
+	 - 앞으로의 기능 (키보드 사용 기능) 추가를 위한 준비
+	 
+	 6일
+	alpha 0.1.0.0
+	 - Block의 벽에서 튕겨짐 구현
+	 - 언어 팩 추가 가능 (국제적인 프로그램임)
+	 - 창의 크기가 바뀌어도 Block의 움직임에 지장 없음 (bounce mode), 이러한 mode 선택 가능
+	
+	 8일
+	alpha 0.2.0.0
+	 - 화살표, 힘을 수로 표시 (와 그의 보이기 옵션)
+	 - 힘을 수로 표시할때 소수점 아래 자리수 조절 가능
+
+	 10일
+	alpha 0.2.1.0
+	 - Force 추가하다가 오른쪽 마우스버튼을 클릭해 취소 (Escape 키와 같은 기능)
+	 - 멈춘 상태에서  Shift키를 눌러 수직 방향으로 힘 추가 가능
+	 - 오른쪽 마우스버튼을 클릭해 Block 삭제
+	 - 왼쪽 마우스버튼을 클릭해 Block 추가
+
+	 18일
+	alpha 0.3.0.0
+	 - 가속도 추가 (아직은 미완성)
+	 - 가속도와 관련된 여러 설정 추가
+
+	 19일
+	alpha 0.3.1.0
+	 - 가속도 완성
+	 - 옆에서 보기(중력 모드) 추가 (아직은 미완성)
+	 - 간단한 GUI 정리
+
+	 20일
+	alpha 0.3.2.0
+	 - 가속도 오류 고침
+	 - 중력 보완 (아직도 미완성)
+	 - 보는 시점 바꾸기 가능
+	
+	 21일
+	beta 0.4.0.0 (b0400)
+	 - 가속도 다시 구현 (rewrote acceleration code)
+	 - 중력 모드
+	 - GUI 정리
+	beta 0.4.1.0
+	 - 중력 모드 오류 수정
+	 - 모드 변경이 원활해짐
+	 - 설정
+		 - 벽에 충돌시 가속도 변화 설정 추가
+		 - 시뮬레이션 속도 조절 가능
+	 - UI 최적화
+		 - 한국어 팩 완성 (영어 팩도 있음)
+	beta 0.4.2.0
+	 - 평행사변형법 구현(과 이에 대한 설정)
+	 - 알록달록
+		- 땅에도 색이 있다
+		- 힘 종류별로 색 구분
+
+	 22일
+	beta 0.5.0.0
+	 - 중력 오류 수정
+	 - 질량 보기
+	 - 기호 (힘, 합력, 가속도 문자) 보기
+	 - 기본적인 개념 설명 추가
+	 - Block 크기 확대
+	 - 모드 변환이 간편해짐 (JCheckBox 하나로 중력 추가/삭제)
+	beta 0.5.1.0
+	 - 질량 보기 위치 수정
+	 - GUI를 더 깔끔하게
+	 - 기호 보기에서 2자리 이상의 아래첨자 표기 버그 수정
+	beta 0.5.1.1
+	 - Windows 최적화
+	beta 0.5.1.2
+	 - Java 버전 오류 수정
+
+      7월
+	 7일
+	beta 0.5.2.0
+	 - 코드 정리
+		- Java SDK 1.8.0_05의 업데이트를 사용 (Lambda expressions)
+	 - 잘못된 수 입력 차단
+	 - 중력 모드에서 창 크기 재설정시 블럭이 천장에 끼는 버그 수정
+
+	 11일
+	beta 0.5.2.1
+	 - 다시 한번 정리
+
+	 12일
+	beta 0.6.0.0
+	 - Block의 좌표가 x = 0, y = 0 일때 Block이 그려지지 않는 오류 수정
+	 - Simulation 내보내기(저장), 불러오기(복귀)
+	 - Block 전체 삭제 기능 추가
+	beta 0.6.0.1
+	 - 라이브러리까지 하나의 실행 .jar로 통합
+	beta 0.6.1.0
+	 - Simulation 내보내기 시 파일 형식이 정해지지 않는 오류 수정
+
+	 13일
+	beta 0.6.2.0
+	 - Simulation 불러오기 시 저장된 설정까시 적용
