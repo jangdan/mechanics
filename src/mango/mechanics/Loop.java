@@ -1,21 +1,32 @@
 package mango.mechanics;
 
-import java.util.logging.*;
 import static mango.mechanics.MechanicsSimulator.s;
 import static mango.mechanics.Simulation.*;
 
-public class Loop implements Runnable {
-    @Override
-    public void run(){
-        while(!isPaused){
-            refreshnullc();
-            for(int b = 0; b < index; ++b){
-                blocks[b].move();
+public class Loop {
+    public class LogicLoop implements Runnable {
+        @Override
+        public void run(){
+            while(!isPaused){
+                refreshnullc();
+                for(int b = 0; b < index; ++b){
+                    blocks[b].move();
+                }
+
+                try { Thread.sleep(lsleept); }
+                catch(InterruptedException e){}
             }
-            s.repaint();
-        
-            try { Thread.sleep(sleept); }
-            catch(InterruptedException e){ Logger.getLogger(Loop.class.getName()).log(Level.SEVERE, null, e); }
+        }
+    }
+    public class GraphicsLoop implements Runnable {
+        @Override
+        public void run(){
+            while(!isPaused){
+                s.repaint();
+
+                try { Thread.sleep(lsleept); }
+                catch(InterruptedException e){}
+            }
         }
     }
 }

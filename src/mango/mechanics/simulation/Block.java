@@ -1,10 +1,12 @@
 package mango.mechanics.simulation;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.font.*;
 import java.awt.geom.*;
 import java.text.*;
 import java.util.*;
+import static mango.mechanics.MechanicsSimulator.*;
 import static mango.mechanics.Simulation.*;
 import static mango.mechanics.simulation.Force.G;
 import org.json.simple.*;
@@ -13,7 +15,7 @@ public class Block implements JSONAware {
     //Essentials
     public static int dx, dy;
     public static int dh = 40, dw = 50;
-    public static double dm = 70d;
+    public static double dm = 100d;
     public static int bx, by;
     
     int h, w;
@@ -23,9 +25,6 @@ public class Block implements JSONAware {
     public Force[] forces = new Force[360];
     
     public Color[] forcesColor = new Color[forces.length];
-    public static boolean RandomColorline = false;
-    public static Random RC = new Random(); //Random Colors
-    public static Color defaultForceColor = Color.BLACK;
     
     Rectangle2D.Double R2D = new Rectangle2D.Double();
             
@@ -36,47 +35,26 @@ public class Block implements JSONAware {
     double nx, ny; //net( force) x, y
     double ax, ay; //acceleration x, y
     double vx, vy; //velocity x, y;
-    
-    public static boolean allowacceleration = true;
-    public static boolean drawacceleration = true;
-    public static Color aColor = new Color(55,155,255,205); //acceleration Color
-    public static Color iaColor = new Color(100,200,255,205); //initial acceleration Color
-    
     double mass;
     
     public boolean active = false;
     public boolean focused = false;
     
-    public static final double divisor = 70d;
-    public static boolean drawLine = true;
-    
-    public static boolean drawnF = false;
-    
-    //public static boolean drawnumbers = true;
-    public static int digits = 16;
-    private static final int numbersFontsize = 8;
-    private static final Font numbersFont = new Font(Font.MONOSPACED, Font.PLAIN, numbersFontsize);
-    
-    public static boolean drawmass = true;
-    private static final int massFontsize = 16;
-    private static final Font massFont = new Font(Font.MONOSPACED, Font.PLAIN, massFontsize);
-    
-    public static boolean drawlabels = true;
-    private static final int labelsFontsize = 12;
-    private static final Font labelsFont = new Font(Font.MONOSPACED, Font.PLAIN, labelsFontsize);
-    
-    public static boolean drawParellelogram = true;
-    
-    public static int Bedgehandlingmode = 0; //Block edge handling mode, 0: unlimited, 1: bounce, 2: wrap, -1: gravity
-    public static int Bcollisionhandlingmode = 0; //Block collision handling mode, 0: ignore, 1: bounce
-    public static int Bahandlingmode = 0; //Block acceleration handling mode, 0: Keep, 1: Reverse, 2: Reset
-    
     //For side-scrolling-like view
-    public Force gravity;
+    public static Force gravity;
     public static Color gravityColor = new Color(255,5,5);
-    int gravityindex = -1;
+    static int gravityindex = -1;
     
-    public Block(double ix,double iy, int iw,int ih, Force ia, double im) {
+    double moveford = 0;
+    boolean shouldmovefor = false;
+    double moved = 0;
+    
+    double playford = 0;
+    boolean shouldplayfor = false;
+    long starttime = 0l;
+    long elapsedt = 0l;
+    
+    public Block(double ix,double iy, int iw,int ih, Force ia, double im, double imoveford, double iplayford) {
         w = iw; h = ih;
         x = ix; y = iy;
         mass = im;
@@ -89,202 +67,236 @@ public class Block implements JSONAware {
                 break;
         }*/
         if(ia.getFt() != 0){
-            addForce(ia, iaColor);
+            addForce(ia, s.iaccc);
             calculaten();
         }
-    } public static void setbounds(int ibx,int iby) {
+        if(imoveford > 0){
+            moveford = imoveford;
+            shouldmovefor = true;
+        }
+        if(iplayford > 0){
+            playford = iplayford;
+            shouldplayfor = true;
+        }
+    }
+    public static void setbounds(int ibx,int iby) {
         bx = ibx; by = iby;
     }
     
-    public void move() {
-        //px = x; py = y;
-        x += vx; y += vy; //the acutal moving
-        
-        if(gravitymode){
-            if(gravityindex == -1){
-                gravityindex = findex;
-                addForce(gravity, gravityColor);
-                calculaten();
+    public double getdistance(){ return moved; }
+    public double getelapsedt(){ return elapsedt; }
+    
+    public void move(){
+        if(nx == 0 && ny == 0 && !gravitymode) return;
+        else {
+            if(shouldmovefor){
+                if(moved >= moveford){
+                    c.actionPerformed(new ActionEvent(this, -1, "p"));
+                    moveford = 0;
+                }
             }
-        } else {
-            if(gravityindex != -1){
-                removeForce(gravityindex);
-                gravityindex = -1;
-               
-                ax = ay = 0;
-                vx = vy = 0;
-                calculaten();
+            if(starttime == 0) starttime = System.currentTimeMillis();
+            if(shouldplayfor){
+                //if((System.currentTimeMillis() - starttime) >= playford*1000){ //absolute timing
+                if(elapsedt >= playford*1000){ //relative timing
+                    c.actionPerformed(new ActionEvent(this, -1, "p"));
+                    starttime = 0;
+                }
             }
-        }
-        
-        switch(Bedgehandlingmode){
-            case -1:
-                if (y > by - h/2) {
-                    y = by - h/2;
-                    if(bounceingravity){
-                        ny = -ny;
-                        vy = -vy;
-                    }
+            
+            //px = x; py = y;q
+            x += vx; y += vy; //the acutal moving
+            
+            moved += Math.sqrt(Math.pow(vx, 2) + Math.pow(vy, 2));
+            //elapsedt = System.currentTimeMillis() - starttime; //absolute timing
+            elapsedt += lsleept; //relative timing
+            
+            if(gravitymode){
+                System.out.println("DAS");
+                if(gravityindex == -1){
+                    gravityindex = findex;
+                    addForce(gravity, gravityColor);
                     calculaten();
                 }
-                break;
-            case 0: break; //don't do anything if edgehandlemode == 0 (unlimited mode)
-            case 1:
-                if (x < 0) {
-                    x = 0;
-                    for(int a = 0; a < forces.length-fnullc; ++a){
-                        forces[a].Fx = -forces[a].getFx();
-                    }
-                    switch(Bahandlingmode){
-                        case 0:
-                            vx = -vx;
-                            break;
-                        case 1:
-                            ax = -ax;
-                            vx = -vx;
-                            break;
-                        case 2:
-                            ax = ay = 0;
-                            vx = vy = 0;
-                            break;
-                    }
+            } else {
+                if(gravityindex != -1){
+                    removeForce(gravityindex);
+                    gravityindex = -1;
+                    ax = ay = 0;
+                    vx = vy = 0;
                     calculaten();
-                } else if (x > bx) {
-                    x = bx;
+                }
+            }
 
-                    for(int a = 0; a < forces.length-fnullc; ++a){
-                        forces[a].Fx = -forces[a].getFx();
-                    }
-                    switch(Bahandlingmode){
-                        case 0:
-                            vx = -vx;
-                            break;
-                        case 1:
-                            ax = -ax;
-                            vx = -vx;
-                            break;
-                        case 2:
-                            ax = ay = 0;
-                            vx = vy = 0;
-                            break;
-                    }
-                    calculaten();
-                } if (y < 0) {
-                    y = 0;
-                    for(int a = 0; a < forces.length-fnullc; ++a){
-                        forces[a].Fy = -forces[a].getFy();
-                    }
-                    switch(Bahandlingmode){
-                        case 0:
+            switch(Bedgehandlingmode){
+                case -1:
+                    if (y > by - h/2) {
+                        y = by - h/2;
+                        if(bounceingravity){
+                            ny = -ny;
                             vy = -vy;
-                            break;
-                        case 1:
-                            ay = -ay;
-                            vy = -vy;
-                            break;
-                        case 2:
-                            ax = ay = 0;
-                            vx = vy = 0;
-                            break;
+                        }
+                        calculaten();
                     }
-                    calculaten();
-                } else if (y > by) {
-                    y = by;
-                    for(int a = 0; a < forces.length-fnullc; ++a){
-                        forces[a].Fy = -forces[a].getFy();
-                    }
-                    switch(Bahandlingmode){
-                        case 0:
-                            vy = -vy;
-                            break;
-                        case 1:
-                            ay = -ay;
-                            vy = -vy;
-                            break;
-                        case 2:
-                            ax = ay = 0;
-                            vx = vy = 0;
-                            break;
-                    }
-                    calculaten();
-                }
-            break;
-            case 2:
-                
-            break;
-                
-        }
-        switch(Bcollisionhandlingmode){
-            case 0: break; //don't do anything if collisionhandlemode == 0 (ignore mode)
-            //<editor-fold defaultstate="collapsed" desc="Bounce on Block collision">
-            /*case 1:
-            for(int d = 0; d < blocks.length-publicgetnullc(); ++d){
-                if(blocks[d] != this){
-                    if (getRectangle2D().intersects(blocks[d].getRectangle2D())) {
-                        double thetadegrees = (Math.atan2(ny-(gety()+mouseytolerance/2), nx-(getx()+mousextolerance/2))*180d/Math.PI); //Probably problem here
-                        int roundd = (int)Math.round(thetadegrees/90d)*90;
-                        switch(roundd){
-                            
-                            case -180:
-                                x = blocks[d].x-1;
-                                for(int e = 0; e < forces.length-fnullc; ++e){
-                                    xv[e] = -xv[e];
-                                    forces[e].Fx = -forces[e].getFx();
-                                } for(int e = 0; e < blocks[d].forces.length-blocks[d].fnullc; ++e){
-                                    blocks[d].xv[e] = -blocks[d].xv[e];
-                                    blocks[d].forces[e].Fx = -blocks[d].forces[e].getFx();
-                                }
-                                break;
-                            case 180:
-                                x = blocks[d].x-1;
-                                for(int e = 0; e < forces.length-fnullc; ++e){
-                                    xv[e] = -xv[e];
-                                    forces[e].Fx = -forces[e].getFx();
-                                } for(int e = 0; e < blocks[d].forces.length-blocks[d].fnullc; ++e){
-                                    blocks[d].xv[e] = -blocks[d].xv[e];
-                                    blocks[d].forces[e].Fx = -blocks[d].forces[e].getFx();
-                                }
-                                break;
+                    break;
+                case 0: break; //don't do anything if edgehandlemode == 0 (unlimited mode)
+                case 1:
+                    if (x < 0) {
+                        x = 0;
+                        for(int a = 0; a < forces.length-fnullc; ++a){
+                            forces[a].Fx = -forces[a].getFx();
+                        }
+                        switch(Bahandlingmode){
                             case 0:
-                                x = blocks[d].x+blocks[d].w+1;
-                                for(int e = 0; e < forces.length-fnullc; ++e){
-                                    xv[e] = -xv[e];
-                                    forces[e].Fx = -forces[e].getFx();
-                                } for(int e = 0; e < blocks[d].forces.length-blocks[d].fnullc; ++e){
-                                    blocks[d].xv[e] = -blocks[d].xv[e];
-                                    blocks[d].forces[e].Fx = -blocks[d].forces[e].getFx();
-                                }
+                                vx = -vx;
                                 break;
-                                
-                            case -90:
-                                y = blocks[d].y+blocks[d].h+1;
-                                for(int e = 0; e < forces.length-fnullc; ++e){
-                                    yv[e] = -yv[e];
-                                    forces[e].Fy = -forces[e].getFy();
-                                } for(int e = 0; e < blocks[d].forces.length-blocks[d].fnullc; ++e){
-                                    blocks[d].yv[e] = -blocks[d].yv[e];
-                                    blocks[d].forces[e].Fy = -blocks[d].forces[e].getFy();
-                                }
+                            case 1:
+                                ax = -ax;
+                                vx = -vx;
                                 break;
-                            case 90:
-                                y = blocks[d].y-1;
-                                for(int e = 0; e < forces.length-fnullc; ++e){
-                                    yv[e] = -yv[e];
-                                    blocks[d].forces[e].Fy = -blocks[d].forces[e].getFy();
-                                } for(int e = 0; e < blocks[d].forces.length-blocks[d].fnullc; ++e){
-                                    blocks[d].yv[e] = -blocks[d].yv[e];
-                                    blocks[d].forces[e].Fy = -blocks[d].forces[e].getFy();
-                                }
+                            case 2:
+                                ax = ay = 0;
+                                vx = vy = 0;
+                                break;
+                        }
+                        calculaten();
+                    } else if (x > bx) {
+                        x = bx;
+
+                        for(int a = 0; a < forces.length-fnullc; ++a){
+                            forces[a].Fx = -forces[a].getFx();
+                        }
+                        switch(Bahandlingmode){
+                            case 0:
+                                vx = -vx;
+                                break;
+                            case 1:
+                                ax = -ax;
+                                vx = -vx;
+                                break;
+                            case 2:
+                                ax = ay = 0;
+                                vx = vy = 0;
+                                break;
+                        }
+                        calculaten();
+                    } if (y < 0) {
+                        y = 0;
+                        for(int a = 0; a < forces.length-fnullc; ++a){
+                            forces[a].Fy = -forces[a].getFy();
+                        }
+                        switch(Bahandlingmode){
+                            case 0:
+                                vy = -vy;
+                                break;
+                            case 1:
+                                ay = -ay;
+                                vy = -vy;
+                                break;
+                            case 2:
+                                ax = ay = 0;
+                                vx = vy = 0;
+                                break;
+                        }
+                        calculaten();
+                    } else if (y > by) {
+                        y = by;
+                        for(int a = 0; a < forces.length-fnullc; ++a){
+                            forces[a].Fy = -forces[a].getFy();
+                        }
+                        switch(Bahandlingmode){
+                            case 0:
+                                vy = -vy;
+                                break;
+                            case 1:
+                                ay = -ay;
+                                vy = -vy;
+                                break;
+                            case 2:
+                                ax = ay = 0;
+                                vx = vy = 0;
                                 break;
                         }
                         calculaten();
                     }
-                }
+                break;
+                case 2:
+
+                break;
             }
-            break;*///</editor-fold>
+            switch(Bcollisionhandlingmode){
+                case 0: break; //don't do anything if collisionhandlemode == 0 (ignore mode)
+                //<editor-fold defaultstate="collapsed" desc="Bounce on Block collision">
+                /*case 1:
+                for(int d = 0; d < blocks.length-publicgetnullc(); ++d){
+                    if(blocks[d] != this){
+                        if (getRectangle2D().intersects(blocks[d].getRectangle2D())) {
+                            double thetadegrees = (Math.atan2(ny-(gety()+mouseytolerance/2), nx-(getx()+mousextolerance/2))*180d/Math.PI); //Probably problem here
+                            int roundd = (int)Math.round(thetadegrees/90d)*90;
+                            switch(roundd){
+
+                                case -180:
+                                    x = blocks[d].x-1;
+                                    for(int e = 0; e < forces.length-fnullc; ++e){
+                                        xv[e] = -xv[e];
+                                        forces[e].Fx = -forces[e].getFx();
+                                    } for(int e = 0; e < blocks[d].forces.length-blocks[d].fnullc; ++e){
+                                        blocks[d].xv[e] = -blocks[d].xv[e];
+                                        blocks[d].forces[e].Fx = -blocks[d].forces[e].getFx();
+                                    }
+                                    break;
+                                case 180:
+                                    x = blocks[d].x-1;
+                                    for(int e = 0; e < forces.length-fnullc; ++e){
+                                        xv[e] = -xv[e];
+                                        forces[e].Fx = -forces[e].getFx();
+                                    } for(int e = 0; e < blocks[d].forces.length-blocks[d].fnullc; ++e){
+                                        blocks[d].xv[e] = -blocks[d].xv[e];
+                                        blocks[d].forces[e].Fx = -blocks[d].forces[e].getFx();
+                                    }
+                                    break;
+                                case 0:
+                                    x = blocks[d].x+blocks[d].w+1;
+                                    for(int e = 0; e < forces.length-fnullc; ++e){
+                                        xv[e] = -xv[e];
+                                        forces[e].Fx = -forces[e].getFx();
+                                    } for(int e = 0; e < blocks[d].forces.length-blocks[d].fnullc; ++e){
+                                        blocks[d].xv[e] = -blocks[d].xv[e];
+                                        blocks[d].forces[e].Fx = -blocks[d].forces[e].getFx();
+                                    }
+                                    break;
+
+                                case -90:
+                                    y = blocks[d].y+blocks[d].h+1;
+                                    for(int e = 0; e < forces.length-fnullc; ++e){
+                                        yv[e] = -yv[e];
+                                        forces[e].Fy = -forces[e].getFy();
+                                    } for(int e = 0; e < blocks[d].forces.length-blocks[d].fnullc; ++e){
+                                        blocks[d].yv[e] = -blocks[d].yv[e];
+                                        blocks[d].forces[e].Fy = -blocks[d].forces[e].getFy();
+                                    }
+                                    break;
+                                case 90:
+                                    y = blocks[d].y-1;
+                                    for(int e = 0; e < forces.length-fnullc; ++e){
+                                        yv[e] = -yv[e];
+                                        blocks[d].forces[e].Fy = -blocks[d].forces[e].getFy();
+                                    } for(int e = 0; e < blocks[d].forces.length-blocks[d].fnullc; ++e){
+                                        blocks[d].yv[e] = -blocks[d].yv[e];
+                                        blocks[d].forces[e].Fy = -blocks[d].forces[e].getFy();
+                                    }
+                                    break;
+                            }
+                            calculaten();
+                        }
+                    }
+                }
+                break;*///</editor-fold>
+            }
+            accelerate();
         }
-        accelerate();
-    } private void calculaten() { //(add up the Forces and calculate the net force
+    }
+    private void calculaten() { //(add up the Forces and calculate the net force
         nx = ny = 0;
         for(int a = 0; a < forces.length-fnullc; ++a){
             nx += forces[a].getFx(); ny += forces[a].getFy();
@@ -308,47 +320,49 @@ public class Block implements JSONAware {
     
     DecimalFormat massDF = new DecimalFormat("#0.0");
     
-    public void draw(Graphics2D G2D) {
-        FM = G2D.getFontMetrics(numbersFont);
+    public void draw(Graphics2D g) {
+        FM = g.getFontMetrics(numbersFont);
         charWidth = FM.charWidth('0');
         
         R2D.setRect(x, y, w, h);
-        G2D.draw(R2D);
+        g.setColor(s.blockc);
+        g.draw(R2D);
         
         if(drawLine||drawnF||drawlabels||drawParellelogram||drawacceleration||drawmass){
             double box = getx()+mousextolerance/2; double boy = gety()+mouseytolerance/2;
             for(int c = 0; c < forces.length-fnullc; ++c){
-                double theta = Math.atan2(boy+forces[c].getFy()*divisor-boy, box+forces[c].getFx()*divisor-box); //angle of slope
+                double theta = Math.atan2(boy+forces[c].getFy()*multiplier-boy, box+forces[c].getFx()*multiplier-box); //angle of slope
                 if(drawLine){
-                    if(RandomColorline) G2D.setColor(forcesColor[c]);
+                    g.setColor(s.linec);
+                    if(RandomColorline) g.setColor(forcesColor[c]);
                     if(forces[c].Ft == G){
-                        G2D.setStroke(gravitydash);
-                        G2D.setColor(forcesColor[c]);
+                        g.setStroke(gravitydash);
+                        g.setColor(forcesColor[c]);
                     }
 
-                    Line2D.Double line = new Line2D.Double(box, boy, box+forces[c].getFx()*divisor, boy+forces[c].getFy()*divisor);
-                    G2D.draw(line);
+                    Line2D.Double line = new Line2D.Double(box, boy, box+forces[c].getFx()*multiplier, boy+forces[c].getFy()*multiplier);
+                    g.draw(line);
 
                     if(drawarrow){
-                        drawFarrowhead(G2D, theta, box+forces[c].getFx()*divisor, boy+forces[c].getFy()*divisor);
+                        drawFarrowhead(g, theta, box+forces[c].getFx()*multiplier, boy+forces[c].getFy()*multiplier);
                     }
                     if(forces[c].Ft == G){
-                        G2D.setStroke(defaultStroke);
-                        G2D.setColor(defaultForceColor);
+                        g.setStroke(defaultStroke);
+                        g.setColor(s.linec);
                     }
-                    if(RandomColorline) G2D.setColor(defaultForceColor);
+                    if(RandomColorline) g.setColor(s.linec);
                     
                 }
                 //<editor-fold defaultstate="collapsed" desc="Draw numbers">
                 /*if(drawnumbers){
-                    G2D.setFont(numbersFont);
+                    g.setFont(numbersFont);
                     String digitsformatbase = "#0.0000000000000000";
                     for(int i = 0; i <= 16-digits; ++i) digitsformatbase = digitsformatbase.substring(0, digitsformatbase.length()-1);
 
-                    if(RandomColorline) G2D.setColor(new Color(forcesColor[c].getRed(), forcesColor[c].getGreen(), forcesColor[c].getBlue(), 192));
+                    if(RandomColorline) g.setColor(new Color(forcesColor[c].getRed(), forcesColor[c].getGreen(), forcesColor[c].getBlue(), 192));
 
                     String lformatbase = "#0.0000000000000000"; //lengthformatbase
-                    double theta = Math.atan2(boy+forces[c].getFy()*divisor-boy, box+forces[c].getFx()*divisor-box); //angle of slope
+                    double theta = Math.atan2(boy+forces[c].getFy()*multiplier-boy, box+forces[c].getFx()*multiplier-box); //angle of slope
 
                     AffineTransform AT = new AffineTransform();
 
@@ -361,134 +375,134 @@ public class Block implements JSONAware {
                     DecimalFormat DF = new DecimalFormat(formatbase);
 
                     if(-Math.PI/2 > theta || Math.PI/2 < theta){
-                        AT.translate(box+forces[c].getFx()*divisor, boy+forces[c].getFy()*divisor);
+                        AT.translate(box+forces[c].getFx()*multiplier, boy+forces[c].getFy()*multiplier);
                         AT.scale(-1, -1);
                         AT.rotate(theta);
 
-                        G2D.setTransform(AT);
-                        G2D.drawString(DF.format(forces[c].Ft), -formatbase.length()*charWidth, numbersFontsize/2);
+                        g.setTransform(AT);
+                        g.drawString(DF.format(forces[c].Ft), -formatbase.length()*charWidth, numbersFontsize/2);
                     } else {
-                        AT.translate(box+forces[c].getFx()*divisor, boy+forces[c].getFy()*divisor);
+                        AT.translate(box+forces[c].getFx()*multiplier, boy+forces[c].getFy()*multiplier);
                         AT.rotate(theta);
 
-                        G2D.setTransform(AT);
-                        G2D.drawString(DF.format(forces[c].Ft), numbersFontsize/2, numbersFontsize/2);
+                        g.setTransform(AT);
+                        g.drawString(DF.format(forces[c].Ft), numbersFontsize/2, numbersFontsize/2);
                     }
-                    G2D.setTransform(new AffineTransform());
+                    g.setTransform(new AffineTransform());
 
-                    if(RandomColorline) G2D.setColor(Block.defaultForceColor);
+                    if(RandomColorline) g.setColor(Block.defaultForceColor);
                 }*///</editor-fold>
                 if(drawlabels){
-                    G2D.setFont(labelsFont);
+                    g.setFont(labelsFont);
 
                     AffineTransform AT = new AffineTransform();
                     if(drawLine){
                         AttributedString F = new AttributedString("F"+c);
                         F.addAttribute(TextAttribute.SUPERSCRIPT, TextAttribute.SUPERSCRIPT_SUB, 1, Integer.toString(c).length()+1);
 
-                        AT.translate(box+forces[c].getFx()*divisor, boy+forces[c].getFy()*divisor);
+                        AT.translate(box+forces[c].getFx()*multiplier, boy+forces[c].getFy()*multiplier);
 
-                        G2D.setTransform(AT);
+                        g.setTransform(AT);
                         if(-Math.PI/2 > theta || Math.PI/2 < theta){
-                            G2D.drawString(F.getIterator(), -15, -6);
+                            g.drawString(F.getIterator(), -15, -6);
                         } else {
-                            G2D.drawString(F.getIterator(), 6,6);
+                            g.drawString(F.getIterator(), 6,6);
                         }
                     }
 
-                    G2D.setTransform(new AffineTransform());
+                    g.setTransform(new AffineTransform());
                 }
             } if(drawnF || (360-fnullc == 2)){
                 if(fnullc != 360){
-                    Line2D.Double nF = new Line2D.Double(box, boy, box+nx*divisor, boy+ny*divisor); //net Force
-                    G2D.setStroke(new BasicStroke(2));
-                    G2D.draw(nF);
+                    Line2D.Double nF = new Line2D.Double(box, boy, box+nx*multiplier, boy+ny*multiplier); //net Force
+                    g.setStroke(new BasicStroke(2));
+                    g.draw(nF);
 
                     if(drawarrow){
                         double theta = Math.atan2(nF.y2-nF.y1, nF.x2-nF.x1); //angle of slope
-                        drawFarrowhead(G2D, theta, box+nx*divisor, boy+ny*divisor);
+                        drawFarrowhead(g, theta, box+nx*multiplier, boy+ny*multiplier);
                     }
 
-                    G2D.setStroke(new BasicStroke(1));
+                    g.setStroke(new BasicStroke(1));
                 }
             } if(drawParellelogram){
                 if(360-fnullc == 2){
                     AffineTransform AT = new AffineTransform();
-                    G2D.setStroke(pdash);
-                    Line2D.Double pF1 = new Line2D.Double(0, 0, forces[1].getFx()*divisor, forces[1].getFy()*divisor);
-                    AT.translate(box+forces[0].getFx()*divisor, boy+forces[0].getFy()*divisor);
+                    g.setStroke(pdash);
+                    Line2D.Double pF1 = new Line2D.Double(0, 0, forces[1].getFx()*multiplier, forces[1].getFy()*multiplier);
+                    AT.translate(box+forces[0].getFx()*multiplier, boy+forces[0].getFy()*multiplier);
                     AT.scale(1, 1);
-                    G2D.setTransform(AT);
-                    G2D.draw(pF1);
+                    g.setTransform(AT);
+                    g.draw(pF1);
                     
                     AT = new AffineTransform();
-                    G2D.setTransform(AT);
+                    g.setTransform(AT);
                     
-                    Line2D.Double pF0 = new Line2D.Double(0, 0, forces[0].getFx()*divisor, forces[0].getFy()*divisor);
-                    AT.translate(box+forces[1].getFx()*divisor, boy+forces[1].getFy()*divisor);
+                    Line2D.Double pF0 = new Line2D.Double(0, 0, forces[0].getFx()*multiplier, forces[0].getFy()*multiplier);
+                    AT.translate(box+forces[1].getFx()*multiplier, boy+forces[1].getFy()*multiplier);
                     AT.scale(1, 1);
-                    G2D.setTransform(AT);
-                    G2D.draw(pF0);
-                    G2D.setTransform(new AffineTransform());
-                    G2D.setStroke(defaultStroke);
+                    g.setTransform(AT);
+                    g.draw(pF0);
+                    g.setTransform(new AffineTransform());
+                    g.setStroke(defaultStroke);
                 }
             } if(drawmass){
-                G2D.setFont(massFont);
-                G2D.drawString(massDF.format(mass), (float)x+2, (float)boy-h/3+8);
+                g.setFont(massFont);
+                g.drawString(massDF.format(mass), (float)x+2, (float)boy-h/3+8);
             } if(drawacceleration){
                 if(ax != 0 || ay != 0){
-                    Line2D.Double ac = new Line2D.Double(box, boy, box+ax, boy+ay); //acceleration
-                    G2D.setColor(aColor);
-                    G2D.setStroke(new BasicStroke(2));
-                    G2D.draw(ac);
+                    Line2D.Double ac = new Line2D.Double(box, boy, box+ax*multiplier, boy+ay*multiplier); //acceleration
+                    g.setColor(s.accc);
+                    g.setStroke(new BasicStroke(2));
+                    g.draw(ac);
 
                     if(drawarrow){
                         double theta = Math.atan2(ac.y2-ac.y1, ac.x2-ac.x1); //angle of slope
-                        drawFarrowhead(G2D, theta, box+ax, boy+ay);
+                        drawFarrowhead(g, theta, box+ax*multiplier, boy+ay*multiplier);
                     }
-                    G2D.setColor(defaultForceColor);
-                    G2D.setStroke(new BasicStroke(1));
+                    g.setColor(s.linec);
+                    g.setStroke(new BasicStroke(1));
                 }
             } if(drawlabels){
-                G2D.setFont(labelsFont);
+                g.setFont(labelsFont);
 
                 AffineTransform AT = new AffineTransform();
                 if(drawnF || (360-fnullc == 2)){
                     if(nx != 0 && ny != 0){
-                        double theta = Math.atan2(boy+ny*divisor-boy, box+nx*divisor-box); //angle of slope
+                        double theta = Math.atan2(boy+ny*multiplier-boy, box+nx*multiplier-box); //angle of slope
                         AttributedString Fn = new AttributedString("Fn");
                         Fn.addAttribute(TextAttribute.SUPERSCRIPT, TextAttribute.SUPERSCRIPT_SUB, 1, 2);
 
-                        AT.translate(box+nx*divisor, boy+ny*divisor);
+                        AT.translate(box+nx*multiplier, boy+ny*multiplier);
 
-                        G2D.setTransform(AT);
+                        g.setTransform(AT);
                         if(-Math.PI/2 > theta || Math.PI/2 < theta){
-                            G2D.drawString(Fn.getIterator(), -15, -6);
+                            g.drawString(Fn.getIterator(), -15, -6);
                         } else {
-                            G2D.drawString(Fn.getIterator(), 6,6);
+                            g.drawString(Fn.getIterator(), 6,6);
                         }
-                        G2D.setTransform(new AffineTransform());
+                        g.setTransform(new AffineTransform());
                     }
                 }
                 AT = new AffineTransform();
                 if(drawacceleration && allowacceleration && (ax != 0 || ay != 0)){
-                    double theta = Math.atan2(boy+ay*divisor-boy, box+ax*divisor-box); //angle of slope
-                    AT.translate(box+ax*divisor, boy+ay*divisor);
+                    double theta = Math.atan2(boy+ay*multiplier-boy, box+ax*multiplier-box); //angle of slope
+                    AT.translate(box+ax*multiplier, boy+ay*multiplier);
 
-                    G2D.setTransform(AT);
+                    g.setTransform(AT);
                     if(-Math.PI/2 > theta || Math.PI/2 < theta){
-                        G2D.drawString("a", -15, -6);
+                        g.drawString("a", -15, -6);
                     } else {
-                        G2D.drawString("a", 6,6);
+                        g.drawString("a", 6,6);
                     }
-                    G2D.setTransform(new AffineTransform());
+                    g.setTransform(new AffineTransform());
                 }
             }
         } 
     }
     public static void drawFarrowhead(Graphics2D G2D, double theta, double ox, double oy){ //draw Force arrowhead
-        Line2D.Double arrowr = new Line2D.Double(0, 0, numbersFontsize/2, -numbersFontsize/2); //right arrowhead
-        Line2D.Double arrowl = new Line2D.Double(0, 0, -numbersFontsize/2, -numbersFontsize/2); //left arrowhead
+        Line2D.Double arrowr = new Line2D.Double(0, 0, 6, -6); //right arrowhead
+        Line2D.Double arrowl = new Line2D.Double(0, 0, -6, -6); //left arrowhead
 
         AffineTransform AT = new AffineTransform();
         AT.translate(ox, oy);
@@ -597,6 +611,8 @@ public class Block implements JSONAware {
         JSONBlock.put("vx", vx);
         JSONBlock.put("vy", vy);
         JSONBlock.put("mass", mass);
+        JSONBlock.put("moveford", moveford);
+        JSONBlock.put("playford", playford);
         
         return JSONBlock.toString();
     }

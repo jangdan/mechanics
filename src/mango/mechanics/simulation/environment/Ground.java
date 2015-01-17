@@ -17,7 +17,7 @@ public class Ground {
         R.setRect(x, y, w, h);
         G2D.setColor(GrColor);
         G2D.fill(R);
-        G2D.setColor(Block.defaultForceColor);
+        G2D.setColor(s.linec);
     }
     public void update() {
         w = 3*s.getWidth();

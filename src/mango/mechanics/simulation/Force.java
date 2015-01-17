@@ -8,7 +8,7 @@ public class Force implements JSONAware {
     double Ft;
     double Fx, Fy;
     
-    public static final double G = 9.80665/9.80665*3;
+    public static final double G = 9.80665;
 
     /**
      *
@@ -23,19 +23,11 @@ public class Force implements JSONAware {
         Fy = F * Math.sin(theta); //decompose F
     }
     
-    public double getFx() {
-        return this.Fx;
-    } public double getFy() {
-        return this.Fy;
-    } public double getFt() {
-        return Ft;
-    } public double gettheta() {
-        return Ft;
+    public double getFx(){ return Fx;
+    } public double getFy(){ return Fy;
+    } public double getFt(){ return Ft;
     }
-    
-    public static double toRadians(int idegrees) {
-        return idegrees*Math.PI/180;
-    }
+    public static double toRadians(int idegrees){ return idegrees*Math.PI/180; }
 
     private final JSONObject JSONForce = new JSONObject();
     @Override
