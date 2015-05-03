@@ -1,4 +1,4 @@
-package mango.mechanics.controls;
+package mechanics.utilities;
 
 import java.text.ParseException;
 import javax.swing.text.DefaultFormatter;

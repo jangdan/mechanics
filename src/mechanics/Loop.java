@@ -1,18 +1,15 @@
-package mango.mechanics;
+package mechanics;
 
-import static mango.mechanics.MechanicsSimulator.s;
-import static mango.mechanics.Simulation.*;
+import static mechanics.MechanicsSimulator.*;
+import static mechanics.Simulation.*;
 
 public class Loop {
     public class LogicLoop implements Runnable {
         @Override
         public void run(){
-            while(!isPaused){
-                refreshnullc();
-                for(int b = 0; b < index; ++b){
-                    blocks[b].move();
-                }
-
+            while(!simulation.isPaused){
+                for(int b = 0; b < simulation.bindex; ++b) simulation.blocks[b].move();
+                
                 try { Thread.sleep(lsleept); }
                 catch(InterruptedException e){}
             }
@@ -21,9 +18,8 @@ public class Loop {
     public class GraphicsLoop implements Runnable {
         @Override
         public void run(){
-            while(!isPaused){
-                s.repaint();
-
+            while(!simulation.isPaused){
+                simulation.repaint();
                 try { Thread.sleep(lsleept); }
                 catch(InterruptedException e){}
             }

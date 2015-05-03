@@ -1,4 +1,28 @@
 BETA(β)
+β0.8.2 (5.3.15)
+* Fixed many minor bugs
+
+β0.8.1 (5.1.15)
+* Collision works cleanly without bugs.
+* Added labels for other quantities
+* Reworked save system (no third-party libraries! yay?)
+
+β0.8.0 (4.2.15)
+* more block data available when you select a block
+* you can now see(preview) the magnitude of the force you’re adding to the block
+* use the arrow keys to actively add forces to a selected* block
+* fixed gravity ENTIRELY.
+* added friction
+* fixed clipping of textboxes
+* moving ‘camera’ that follows a block (type ‘c’ after you select* it)
+	* ground is longer to encompass the bigger simulation area
+	* you can add blocks and forces as you would normally even while following a block
+* working on a new Block-Block collision mechanism
+* cleanup
+* and more changes that I cannot remember
+
+P.S. You can select a block by clicking on it. You’ll then see lots of text on top of that selected object
+
 β0.7.1 (1.14.15)
 * enabled gravity mode (temporarily)
 

@@ -1,8 +1,7 @@
-package mango.mechanics.simulation.environment;
+package mechanics.simulation;
 
-import mango.mechanics.simulation.Block;
 import java.awt.*;
-import static mango.mechanics.MechanicsSimulator.s;
+import static mechanics.MechanicsSimulator.simulation;
 
 public class Ground {
     Rectangle R = new Rectangle();
@@ -10,18 +9,18 @@ public class Ground {
     int w ;final int h = Block.dh/2;
     private final static Color GrColor = new Color(150,100,50);
     
-    public Ground() {
-        w = 3*s.getWidth(); 
+    public Ground(){
+        w = 1000000;
     }
     public void draw(Graphics2D G2D){
         R.setRect(x, y, w, h);
         G2D.setColor(GrColor);
         G2D.fill(R);
-        G2D.setColor(s.linec);
+        G2D.setColor(simulation.linec);
     }
-    public void update() {
-        w = 3*s.getWidth();
-        x = -s.getWidth(); y = s.getHeight() - h;
+    public void update(){
+        w = 1000000;
+        x = -w/2; y = simulation.getHeight() - h;
     }
     
     public Rectangle getRectangle(){
