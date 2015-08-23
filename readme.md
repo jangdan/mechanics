@@ -1,9 +1,5 @@
 #Mechanics Simulator
 
-#####by Daniel Jang
-
------------
-
 ![screenshot!](screenshot.png)
 
 (code name: mechanics)
