@@ -73,7 +73,7 @@ public class Simulation extends JPanel implements MouseListener, MouseMotionList
     public double cor = 1d; //coefficient of restitution
     
     //For side-scrolling-like view
-    public Ground ground;
+    public Ground Gr;
     
     public static final Font numbersFont = new Font(Font.MONOSPACED, Font.PLAIN, 8);
     
@@ -190,7 +190,7 @@ public class Simulation extends JPanel implements MouseListener, MouseMotionList
         
         if(shouldusecamera()) g.drawRect(0, 0, getWidth(), getHeight());
         
-        if(gravitymode && ground != null) ground.draw(g);
+        if(gravitymode && Gr != null) Gr.draw(g);
         
         
         NumberFormat nf = new DecimalFormat("#0.000");
@@ -458,7 +458,7 @@ public class Simulation extends JPanel implements MouseListener, MouseMotionList
     
     @Override
     public void componentResized(ComponentEvent e){
-        if(gravitymode && ground != null) ground.update();
+        if(gravitymode && Gr != null) Gr.update();
         for(int i = 0; i < bindex; ++i) blocks[i].refreshBounds();
     }
     
@@ -496,7 +496,7 @@ public class Simulation extends JPanel implements MouseListener, MouseMotionList
         jsons.put("blocks", jsonblocks);
         
         JSONArray jsonmovingclub = new JSONArray();
-        for(int i = 0; i < movingclub.size(); ++i) jsonmovingclub.put(movingclub.get(i));
+        for(int i = 0; i < movingclub.size(); ++i) jsonblocks.put(movingclub.get(i));
         jsons.put("movingclub", jsonmovingclub);
         
         jsons.put("currenttheme", currenttheme);

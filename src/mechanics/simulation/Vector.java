@@ -67,13 +67,7 @@ public class Vector implements JSONString {
     }
     
     @Override
-    public String toString(){
-        String s = "("+x+", "+y+")";
-        return s;
-    }
-    
-    @Override
-    public String toJSONString(){
+    public String toJSONString() {
         JSONObject jsonf = new JSONObject();
         jsonf.put("magnitude", t);
         jsonf.put("theta", theta);

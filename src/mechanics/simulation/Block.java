@@ -12,7 +12,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONString;
 
-public class Block extends SObject implements JSONString {
+public class Block extends Object implements JSONString {
     //Essentials
     public static int dx, dy;
     public static final int dh = 40, dw = 50;
@@ -36,7 +36,7 @@ public class Block extends SObject implements JSONString {
     public double x, y;
     double mass;
     
-    public Vector n = new Vector(0,0);
+    Vector n = new Vector(0,0);
     
     double pv, ppv;
     Vector v = new Vector(0,0);
@@ -70,7 +70,7 @@ public class Block extends SObject implements JSONString {
     long starttime = 0l;
     long elapsedt = 0l;
     
-    public boolean moving = false;
+    boolean moving = false;
     
     boolean keycontrolledForces = false;
     static double deviation = 0.1d;
@@ -163,7 +163,9 @@ public class Block extends SObject implements JSONString {
         calculaten();
     }
     
+    
     long timer;
+    
     public void move(){
         if((kup || kdown || kleft || kright) && findex == 0 && focused){
             keycontrolledForces = true;
@@ -183,7 +185,6 @@ public class Block extends SObject implements JSONString {
         }
         
         if(n.x != 0 || n.y != 0 || gravitymode){
-            System.out.println(index);
             moving = true;
             if(System.currentTimeMillis()-timer > 1000){
                 timer = System.currentTimeMillis();
@@ -214,7 +215,6 @@ public class Block extends SObject implements JSONString {
             
             //<editor-fold defaultstate="collapsed" desc="collision with edge">
             switch(Bedgehandlingmode){
-                /*
                 case -1:
                     if(y > bordery - h/2){
                         y = bordery - h/2;
@@ -231,7 +231,7 @@ public class Block extends SObject implements JSONString {
                             onGround = false;
                         }
                     }
-                    break;*/
+                    break;
                 case 1:
                     if (x < 0) {
                         x = 0;
@@ -332,25 +332,24 @@ public class Block extends SObject implements JSONString {
                             }
                             
                             x -= penx; y -= peny;
-                            simulation.blocks[i].x += penx;
-                            simulation.blocks[i].y += peny;
+                            
                             
                             if(penx == 0){
-                                //for(int j = 0; j < findex; ++j) forces[j].y = -forces[j].gety();
+                                for(int j = 0; j < findex; ++j) forces[j].y = -forces[j].gety();
                                 v.multiply(1, -1);
                                 calculaten();
                                 if(simulation.blocks[i].moving){
-                                    //for(int j = 0; j < simulation.blocks[i].findex; ++j) simulation.blocks[i].forces[j].multiply(1, -simulation.cor);
+                                    for(int j = 0; j < simulation.blocks[i].findex; ++j) simulation.blocks[i].forces[j].y = -simulation.blocks[i].forces[j].gety();
                                     simulation.blocks[i].v.multiply(1, -simulation.cor);
                                     simulation.blocks[i].calculaten();
                                 }
                             }
                             if(peny == 0){
-                                //for(int j = 0; j < findex; ++j) forces[j].x = -forces[j].getx();
+                                for(int j = 0; j < findex; ++j) forces[j].x = -forces[j].getx();
                                 v.multiply(-1, 1);
                                 calculaten();
                                 if(simulation.blocks[i].moving){
-                                    //for(int j = 0; j < simulation.blocks[i].findex; ++j) simulation.blocks[i].forces[j].multiply(-simulation.cor, 1);
+                                    for(int j = 0; j < simulation.blocks[i].findex; ++j) simulation.blocks[i].forces[j].x = -simulation.blocks[i].forces[j].getx();
                                     simulation.blocks[i].v.multiply(-simulation.cor, 1);
                                     simulation.blocks[i].calculaten();
                                 }
@@ -409,8 +408,6 @@ public class Block extends SObject implements JSONString {
         }
         
         n.calculatet();
-        
-        System.out.println("n:"+n);
     }
     public void bulldozegravity(){
         n.set(0,0);
