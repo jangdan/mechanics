@@ -8,10 +8,8 @@ public class Loop {
         @Override
         public void run(){
             while(!simulation.isPaused){
-                for(int b = 0; b < simulation.bindex; ++b){
-                    simulation.blocks[b].move();
-                    if(gravitymode) simulation.ground.handleCollision(simulation.blocks[b]);
-                }
+                for(int b = 0; b < simulation.bindex; ++b) simulation.blocks[b].move();
+                
                 try { Thread.sleep(lsleept); }
                 catch(InterruptedException e){}
             }

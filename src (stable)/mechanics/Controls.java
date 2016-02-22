@@ -425,7 +425,7 @@ public class Controls extends JPanel implements ActionListener, ChangeListener {
         onedge.setHorizontalAlignment(SwingConstants.RIGHT);
         add(onedge,c);
         edgehandlingmode = newJComboBox(ehmitems, "ehm");
-        edgehandlingmode.setSelectedIndex(0);
+        edgehandlingmode.setSelectedIndex(1);
         c.gridx = 1; c.gridy = 9;
         add(edgehandlingmode,c);
         
@@ -534,8 +534,8 @@ public class Controls extends JPanel implements ActionListener, ChangeListener {
                 if(addgravity.isSelected()){
                     Bedgehandlingmode = -1;
                     edgehandlingmode.setEnabled(false);
-                    simulation.ground = new Ground();
-                    simulation.ground.update();
+                    simulation.Gr = new Ground();
+                    simulation.Gr.update();
                     gravitybounce.setEnabled(true);
                 } else {
                     simulation.bulldozegravity();
@@ -839,11 +839,6 @@ public class Controls extends JPanel implements ActionListener, ChangeListener {
                     JSONArray jsonforces = iBlock.getJSONArray("forces");
                     JSONArray jsonforcesColor = iBlock.getJSONArray("forcesColor");
                     for(int j = 0; j < jsonforces.length(); ++j) simulation.blocks[workingi].addForce(new Vector(jsonforces.getJSONObject(j)), new Color(jsonforcesColor.getInt(j)));
-                    
-                    simulation.blocks[workingi].calculaten();
-                    System.out.println("finalen:"+simulation.blocks[workingi].moving);
-                    simulation.blocks[workingi].moving = true;
-                    //simulation.blocks[]
                 }
                 
                 JSONArray jsonmovingclub = loads.getJSONArray("movingclub");
@@ -873,6 +868,7 @@ public class Controls extends JPanel implements ActionListener, ChangeListener {
     public void refreshControls(){
         ArrayList<Component> components = new ArrayList<>(Arrays.asList(getComponents()));
         for(int i = 0; i < components.size(); ++i){
+            System.out.println(components.get(i));
             if(components.get(i) instanceof JCheckBox) actionPerformed(new ActionEvent(this,-1,((JCheckBox)components.get(i)).getActionCommand()));
             else if(components.get(i) instanceof JComboBox) actionPerformed(new ActionEvent(this,-1,((JComboBox)components.get(i)).getActionCommand()));
             else if(components.get(i) instanceof JPanel) components.addAll(getComponentsof((JPanel)components.get(i)));
