@@ -1,12 +1,19 @@
-.DS_STORE
-
-
+# NetBeans-generated
 /build/*
-/dev/*
 /dist/*
 /store/*
+manifest.mf
+/nbproject/private/*
+
+
 /exe/Mechanics Simulator.exe
+
 
 
 # development
 /test/*
+
+
+
+# archives
+/dev/*
