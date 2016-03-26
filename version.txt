@@ -1,6 +1,10 @@
 version.txt
 
-BETA(β)
+
+
+beta(β)
+
+
 β0.8.2 (5.3.15)
 * Fixed many minor bugs
 
@@ -53,8 +57,9 @@ P.S. You can select a block by clicking on it. You’ll then see lots of text on
 	- Removed the ‘physics concepts’ pane.
 
 
-Old version history (in Korean)
--------------------------------
+
+old version history (in Korean)
+
 
 2014년
       5월
