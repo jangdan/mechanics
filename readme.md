@@ -1,4 +1,4 @@
-#Mechanics Simulator
+# Mechanics Simulator
 
 ![screenshot!](screenshot.png)
 
